@@ -14,7 +14,7 @@ export async function GET() {
   for (const symbol of SYMBOLS) {
     const { signal } = analyzeSymbol(symbol)
     
-    // 🔍 TEMPORARY: Comment this out so neutral market setups are NOT skipped!
+    // 🔍 TEMPORARY: Commented out so neutral market setups are logged for testing!
     // if (signal.type === "NO_TRADE") continue
 
     const { data, error } = await supabase
@@ -46,15 +46,7 @@ export async function GET() {
   })
 }
 
-
-  // 2. Return what was calculated and saved right onto your screen
-  return NextResponse.json({ 
-    message: "Engine triggered successfully via mobile browser!",
-    structural_signals: persisted 
-  })
-}
-
-// Keep your clean POST function exactly as it is below
+// Keep your clean production POST function exactly as it is below
 export async function POST() {
   const supabase = await createClient()
   const persisted = []
