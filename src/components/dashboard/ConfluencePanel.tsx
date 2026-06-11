@@ -5,10 +5,13 @@ import { Panel } from "@/components/ui/Panel"
 import { cn } from "@/lib/utils"
 
 export function ConfluencePanel({ signal }: { signal: TradeSignal }) {
+  // Safely grab factors from details first, fallback to legacy root, then empty array
+  const factors = signal.details?.factors ?? signal.factors ?? []
+
   return (
     <Panel title="Confluence Factors">
       <ul className="flex flex-col gap-2.5">
-        {signal.factors.map((f) => {
+        {factors.map((f) => {
           const pct = Math.round(Math.abs(f.score) * 100)
           const bullish = f.score > 0
           const bearish = f.score < 0
