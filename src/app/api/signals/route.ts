@@ -1,54 +1,27 @@
-import { NextResponse } from "next/server"
+Import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { analyzeSymbol } from "@/services/analysisService"
 import { SYMBOLS } from "@/lib/instruments"
 
 export const dynamic = "force-dynamic"
 
-// TEMPORARY TESTING CONFIG: GET allows direct execution from your phone browser
+// GET: return recent signal history from the database.
 export async function GET() {
   const supabase = await createClient()
-  const persisted = []
+  const { data, error } = await supabase
+    .from("signals")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100)
 
-  for (const symbol of SYMBOLS) {
-    const { signal } = analyzeSymbol(symbol)
-    
-    // 🔍 TEMPORARY: Commented out so neutral setups populate your table for testing
-    // if (signal.type === "NO_TRADE") continue
-
-    const { data, error } = await supabase
-      .from("signals")
-      .insert({
-        symbol: signal.symbol,
-        type: signal.type,
-        bias: signal.bias,
-        score: signal.score,
-        // 📦 Pack all extra structural metrics cleanly into your jsonb details column
-        details: {
-          entry: signal.entry,
-          stop_loss: signal.stopLoss,
-          take_profit: signal.takeProfit,
-          risk_reward: signal.riskReward,
-          price: signal.price,
-          factors: signal.factors,
-        }
-      })
-      .select()
-      .single()
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-    persisted.push(data)
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-
-  return NextResponse.json({ 
-    message: "Engine triggered successfully via mobile browser!",
-    structural_signals: persisted 
-  })
+  return NextResponse.json({ signals: data })
 }
 
-// Production POST function matching your exact database schema
+// POST: run fresh analysis on all instruments and persist any actionable
+// (BUY/SELL) signals to the signal history.
 export async function POST() {
   const supabase = await createClient()
   const persisted = []
@@ -64,14 +37,12 @@ export async function POST() {
         type: signal.type,
         bias: signal.bias,
         score: signal.score,
-        details: {
-          entry: signal.entry,
-          stop_loss: signal.stopLoss,
-          take_profit: signal.takeProfit,
-          risk_reward: signal.riskReward,
-          price: signal.price,
-          factors: signal.factors,
-        }
+        entry: signal.entry,
+        stop_loss: signal.stopLoss,
+        take_profit: signal.takeProfit,
+        risk_reward: signal.riskReward,
+        price: signal.price,
+        factors: signal.factors,
       })
       .select()
       .single()
