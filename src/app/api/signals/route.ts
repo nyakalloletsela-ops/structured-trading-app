@@ -44,7 +44,7 @@ export async function GET() {
   // 2. Return what was calculated and saved right onto your screen
   return NextResponse.json({ 
     message: "Engine triggered successfully via mobile browser!",
-    persisted structural_signals: persisted 
+    structural_signals: persisted 
   })
 }
 
