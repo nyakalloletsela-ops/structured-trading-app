@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic"
  */
 export async function GET() {
   const supabase = await createClient()
-  
+
   const { data, error } = await supabase
     .from("signals")
     .select("*")
@@ -21,7 +21,7 @@ export async function GET() {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-  
+
   return NextResponse.json({ signals: data })
 }
 
@@ -34,9 +34,11 @@ export async function POST() {
   const persisted = []
 
   for (const symbol of SYMBOLS) {
-    const { signal } = analyzeSymbol(symbol)
-    
-    // 🛡️ Production Safety Filter: Skip setups without clear institutional edge
+    // FIX: analyzeSymbol is async → MUST await
+    const analysis = await analyzeSymbol(symbol)
+    const { signal } = analysis
+
+    // 🛡️ Production Safety Filter
     if (signal.type === "NO_TRADE") continue
 
     const { data, error } = await supabase
@@ -46,7 +48,6 @@ export async function POST() {
         type: signal.type,
         bias: signal.bias,
         score: signal.score,
-        // 📦 Nested cleanly inside your jsonb schema column
         details: {
           entry: signal.entry,
           stop_loss: signal.stopLoss,
@@ -54,7 +55,7 @@ export async function POST() {
           risk_reward: signal.riskReward,
           price: signal.price,
           factors: signal.factors,
-        }
+        },
       })
       .select()
       .single()
@@ -62,6 +63,7 @@ export async function POST() {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
     persisted.push(data)
   }
 
