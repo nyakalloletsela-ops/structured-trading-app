@@ -96,14 +96,26 @@ export interface TradeSignal {
   type: SignalType
   bias: Direction | "neutral"
   score: number // 0..100 confidence
-  entry: number
-  stopLoss: number
-  takeProfit: number
-  riskReward: number
-  factors: SignalFactor[]
-  timeframeAnalysis: Record<Timeframe, StructureAnalysis>
   createdAt: string
-  price: number
+  
+  // 📦 Added details to match the database JSONB schema
+  details?: {
+    entry: number
+    price: number
+    stop_loss: number
+    take_profit: number
+    risk_reward: number
+    factors: SignalFactor[]
+  }
+  
+  // Legacy fields (optional to maintain compatibility with other parts of your app)
+  entry?: number
+  stopLoss?: number
+  takeProfit?: number
+  riskReward?: number
+  factors?: SignalFactor[]
+  timeframeAnalysis?: Record<Timeframe, StructureAnalysis>
+  price?: number
 }
 
 export interface MarketQuote {
