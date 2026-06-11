@@ -6,8 +6,7 @@ import { SYMBOLS } from "@/lib/instruments"
 export const dynamic = "force-dynamic"
 
 /**
- * GET: Serves recent signal history to populate your frontend dashboard.
- * Reads directly from Supabase, keeping the application fast and efficient.
+ * GET: Serves recent signal history
  */
 export async function GET() {
   const supabase = await createClient()
@@ -26,37 +25,44 @@ export async function GET() {
 }
 
 /**
- * POST: Runs the multi-timeframe top-down strategy engine on all symbols.
- * Filters out low-confidence setups and persists high-probability trades.
+ * POST: Runs strategy engine and stores ONLY latest per symbol
  */
 export async function POST() {
   const supabase = await createClient()
   const persisted = []
 
   for (const symbol of SYMBOLS) {
-    // FIX: analyzeSymbol is async → MUST await
     const analysis = await analyzeSymbol(symbol)
     const { signal } = analysis
 
-    // 🛡️ Production Safety Filter
+    // 🛡 skip weak setups
     if (signal.type === "NO_TRADE") continue
 
+    // 🔥 FIX: UPSERT instead of INSERT (prevents duplicates)
     const { data, error } = await supabase
       .from("signals")
-      .insert({
-        symbol: signal.symbol,
-        type: signal.type,
-        bias: signal.bias,
-        score: signal.score,
-        details: {
-          entry: signal.entry,
-          stop_loss: signal.stopLoss,
-          take_profit: signal.takeProfit,
-          risk_reward: signal.riskReward,
-          price: signal.price,
-          factors: signal.factors,
+      .upsert(
+        {
+          symbol: signal.symbol,
+          type: signal.type,
+          bias: signal.bias,
+          score: signal.score,
+
+          details: {
+            entry: signal.entry,
+            stop_loss: signal.stopLoss,
+            take_profit: signal.takeProfit,
+            risk_reward: signal.riskReward,
+            price: signal.price,
+            factors: signal.factors,
+          },
+
+          created_at: new Date().toISOString(),
         },
-      })
+        {
+          onConflict: "symbol",
+        }
+      )
       .select()
       .single()
 
