@@ -5,8 +5,7 @@ import { SYMBOLS } from "@/lib/instruments"
 
 export const dynamic = "force-dynamic"
 
-// TEMPORARY TESTING CONFIG: GET will now actively run the analysis 
-// so you can trigger it directly by refreshing your phone browser!
+// TEMPORARY TESTING CONFIG: GET allows direct execution from your phone browser
 export async function GET() {
   const supabase = await createClient()
   const persisted = []
@@ -14,7 +13,7 @@ export async function GET() {
   for (const symbol of SYMBOLS) {
     const { signal } = analyzeSymbol(symbol)
     
-    // 🔍 TEMPORARY: Commented out so neutral market setups are logged for testing!
+    // 🔍 TEMPORARY: Commented out so neutral setups populate your table for testing
     // if (signal.type === "NO_TRADE") continue
 
     const { data, error } = await supabase
@@ -24,12 +23,15 @@ export async function GET() {
         type: signal.type,
         bias: signal.bias,
         score: signal.score,
-        entry: signal.entry,
-        stop_loss: signal.stopLoss,
-        take_profit: signal.takeProfit,
-        risk_reward: signal.riskReward,
-        price: signal.price,
-        factors: signal.factors,
+        // 📦 Pack all extra structural metrics cleanly into your jsonb details column
+        details: {
+          entry: signal.entry,
+          stop_loss: signal.stopLoss,
+          take_profit: signal.takeProfit,
+          risk_reward: signal.riskReward,
+          price: signal.price,
+          factors: signal.factors,
+        }
       })
       .select()
       .single()
@@ -46,7 +48,7 @@ export async function GET() {
   })
 }
 
-// Keep your clean production POST function exactly as it is below
+// Production POST function matching your exact database schema
 export async function POST() {
   const supabase = await createClient()
   const persisted = []
@@ -62,12 +64,14 @@ export async function POST() {
         type: signal.type,
         bias: signal.bias,
         score: signal.score,
-        entry: signal.entry,
-        stop_loss: signal.stopLoss,
-        take_profit: signal.takeProfit,
-        risk_reward: signal.riskReward,
-        price: signal.price,
-        factors: signal.factors,
+        details: {
+          entry: signal.entry,
+          stop_loss: signal.stopLoss,
+          take_profit: signal.takeProfit,
+          risk_reward: signal.riskReward,
+          price: signal.price,
+          factors: signal.factors,
+        }
       })
       .select()
       .single()
