@@ -11,12 +11,11 @@ export async function GET() {
   const supabase = await createClient()
   const persisted = []
 
-  // 1. Run the live calculation loop across all your instruments
   for (const symbol of SYMBOLS) {
     const { signal } = analyzeSymbol(symbol)
     
-    // For testing: we can log everything, or keep your NO_TRADE filter
-    if (signal.type === "NO_TRADE") continue
+    // 🔍 TEMPORARY: Comment this out so neutral market setups are NOT skipped!
+    // if (signal.type === "NO_TRADE") continue
 
     const { data, error } = await supabase
       .from("signals")
@@ -40,6 +39,13 @@ export async function GET() {
     }
     persisted.push(data)
   }
+
+  return NextResponse.json({ 
+    message: "Engine triggered successfully via mobile browser!",
+    structural_signals: persisted 
+  })
+}
+
 
   // 2. Return what was calculated and saved right onto your screen
   return NextResponse.json({ 
