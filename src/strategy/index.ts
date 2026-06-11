@@ -1,0 +1,10 @@
+// Strategy engine barrel — Smart Money Concepts analysis modules.
+export { detectSwings, lastSwingHigh, lastSwingLow, averageRange } from "./swings"
+export { detectBOS } from "./bos"
+export { detectCHoCH } from "./choch"
+export { detectFVG, activeFVGs } from "./fvg"
+export { detectLiquiditySweeps } from "./liquidity"
+export { detectOrderBlocks, activeOrderBlocks } from "./orderBlocks"
+export { analyzeStructure } from "./structure"
+export { generateSignal, type MultiTimeframeInput } from "./signalEngine"
+export { runBacktest, type BacktestConfig } from "./backtest"
