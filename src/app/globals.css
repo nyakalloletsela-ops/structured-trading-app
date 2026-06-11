@@ -23,6 +23,8 @@
     --muted: 222 16% 14%;
     --muted-foreground: 215 14% 56%;
 
+    --surface: 222 20% 11%;
+
     --accent: 199 89% 48%;
     --accent-foreground: 222 47% 8%;
 
@@ -54,6 +56,21 @@
 /* Tabular numbers for prices */
 .tnum {
   font-variant-numeric: tabular-nums;
+}
+
+@layer components {
+  .text-muted {
+    color: hsl(var(--muted-foreground));
+  }
+  .terminal-input {
+    @apply w-full rounded-md border border-input bg-secondary px-2 py-1.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring;
+  }
+  .terminal-btn {
+    @apply rounded-md border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50;
+  }
+  .terminal-btn-primary {
+    @apply rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50;
+  }
 }
 
 ::-webkit-scrollbar {

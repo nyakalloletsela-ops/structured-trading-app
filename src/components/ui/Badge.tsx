@@ -11,19 +11,22 @@ const styles: Record<Variant, string> = {
 }
 
 export function Badge({
-  variant = "neutral",
+  variant,
+  tone,
   className,
   children,
 }: {
   variant?: Variant
+  tone?: Variant
   className?: string
   children: React.ReactNode
 }) {
+  const v = tone ?? variant ?? "neutral"
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium",
-        styles[variant],
+        styles[v],
         className,
       )}
     >
