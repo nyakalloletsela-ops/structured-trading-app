@@ -51,22 +51,36 @@ export function SignalHistory() {
               </tr>
             </thead>
             <tbody className="tnum">
-              {signals.map((s) => (
-                <tr key={s.id} className="border-b border-border/50">
-                  <td className="py-2 pr-3 font-medium">{s.symbol}</td>
-                  <td className="py-2 pr-3">
-                    <Badge tone={s.type === "BUY" ? "bull" : s.type === "SELL" ? "bear" : "neutral"}>
-                      {s.type}
-                    </Badge>
-                  </td>
-                  <td className="py-2 pr-3">{s.score}</td>
-                  <td className="py-2 pr-3">{formatNumber(s.entry, 2)}</td>
-                  <td className="py-2 pr-3 text-bear">{s.stopLoss ? formatNumber(s.stopLoss, 2) : "—"}</td>
-                  <td className="py-2 pr-3 text-bull">{s.takeProfit ? formatNumber(s.takeProfit, 2) : "—"}</td>
-                  <td className="py-2 pr-3">{s.riskReward ? formatNumber(s.riskReward, 2) : "—"}</td>
-                  <td className="py-2 pr-3 text-muted">{formatDate(s.createdAt)}</td>
-                </tr>
-              ))}
+              {signals.map((s) => {
+                // Safely resolve data from new schema or legacy root
+                const entry = s.details?.entry ?? s.entry ?? 0
+                const sl = s.details?.stop_loss ?? s.stopLoss
+                const tp = s.details?.take_profit ?? s.takeProfit
+                const rr = s.details?.risk_reward ?? s.riskReward
+
+                return (
+                  <tr key={s.id} className="border-b border-border/50">
+                    <td className="py-2 pr-3 font-medium">{s.symbol}</td>
+                    <td className="py-2 pr-3">
+                      <Badge tone={s.type === "BUY" ? "bull" : s.type === "SELL" ? "bear" : "neutral"}>
+                        {s.type}
+                      </Badge>
+                    </td>
+                    <td className="py-2 pr-3">{s.score}</td>
+                    <td className="py-2 pr-3">{formatNumber(entry, 2)}</td>
+                    <td className="py-2 pr-3 text-bear">
+                      {sl ? formatNumber(sl, 2) : "—"}
+                    </td>
+                    <td className="py-2 pr-3 text-bull">
+                      {tp ? formatNumber(tp, 2) : "—"}
+                    </td>
+                    <td className="py-2 pr-3">
+                      {rr ? formatNumber(rr, 2) : "—"}
+                    </td>
+                    <td className="py-2 pr-3 text-muted">{formatDate(s.createdAt)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
