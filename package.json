@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -18,6 +19,16 @@
     "@supabase/supabase-js": "^2.38.0",
     "zustand": "^4.4.0",
     "recharts": "^2.10.0",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^15.0.0"
   }
 }
