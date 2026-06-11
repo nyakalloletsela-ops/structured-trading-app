@@ -5,23 +5,50 @@ import { SYMBOLS } from "@/lib/instruments"
 
 export const dynamic = "force-dynamic"
 
-// GET: return recent signal history from the database.
+// TEMPORARY TESTING CONFIG: GET will now actively run the analysis 
+// so you can trigger it directly by refreshing your phone browser!
 export async function GET() {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("signals")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100)
+  const persisted = []
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  // 1. Run the live calculation loop across all your instruments
+  for (const symbol of SYMBOLS) {
+    const { signal } = analyzeSymbol(symbol)
+    
+    // For testing: we can log everything, or keep your NO_TRADE filter
+    if (signal.type === "NO_TRADE") continue
+
+    const { data, error } = await supabase
+      .from("signals")
+      .insert({
+        symbol: signal.symbol,
+        type: signal.type,
+        bias: signal.bias,
+        score: signal.score,
+        entry: signal.entry,
+        stop_loss: signal.stopLoss,
+        take_profit: signal.takeProfit,
+        risk_reward: signal.riskReward,
+        price: signal.price,
+        factors: signal.factors,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+    persisted.push(data)
   }
-  return NextResponse.json({ signals: data })
+
+  // 2. Return what was calculated and saved right onto your screen
+  return NextResponse.json({ 
+    message: "Engine triggered successfully via mobile browser!",
+    persisted structural_signals: persisted 
+  })
 }
 
-// POST: run fresh analysis on all instruments and persist any actionable
-// (BUY/SELL) signals to the signal history.
+// Keep your clean POST function exactly as it is below
 export async function POST() {
   const supabase = await createClient()
   const persisted = []
