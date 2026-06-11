@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Structured Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Structured Terminal Pro</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,119 +11,180 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/font/lucide.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #020617; }
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
         .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.5); }
+        input[type="range"]::-webkit-slider-thumb { border-radius: 50%; height: 24px; width: 24px; background: #3b82f6; cursor: pointer; -webkit-appearance: none; margin-top: -8px; border: 4px solid #020617; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         function App() {
+            const [instrument, setInstrument] = useState('GOLD');
             const [step, setStep] = useState(1);
             const [pips, setPips] = useState(10);
             const [dailyProfit, setDailyProfit] = useState(0);
-            const [checklist, setChecklist] = useState({
-                htfBias: false, h4Levels: false, priceAtOB: false, ltfConfirm: false, confluence30m: false
+            const [tradeCount, setTradeCount] = useState(0);
+            
+            const [analysis, setAnalysis] = useState({
+                liquidity: false, bos: false, fvg: false, ob: false, h4Levels: false, ltfConfirm: false, confluence30m: false
             });
 
             const getLotSize = (p) => {
                 if (p === 10) return "0.2 - 0.3 Lot";
                 if (p > 10 && p <= 15) return "0.1 Lot";
-                return "INVALID RISK";
+                return "RISK ERROR";
             };
 
-            const allChecked = Object.values(checklist).every(Boolean);
+            const isReady = Object.values(analysis).every(Boolean) && tradeCount < 3;
 
             return (
-                <div className="min-h-screen text-slate-100 p-4 max-w-md mx-auto">
-                    {/* Header */}
-                    <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4 mt-4">
+                <div className="min-h-screen p-4 max-w-md mx-auto pb-20">
+                    {/* Top Bar */}
+                    <div className="flex justify-between items-center mb-6 pt-4">
                         <div>
-                            <h1 className="text-xl font-bold tracking-tight">STRUCTURED</h1>
-                            <p className="text-slate-500 text-xs uppercase tracking-widest">GOLD | US500</p>
+                            <div className="flex gap-2 mb-1">
+                                {['GOLD', 'US500'].map(i => (
+                                    <button 
+                                        key={i}
+                                        onClick={() => setInstrument(i)}
+                                        className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all ${instrument === i ? 'bg-blue-600 border-blue-400' : 'bg-slate-900 border-slate-800 text-slate-500'}`}
+                                    >
+                                        {i}
+                                    </button>
+                                ))}
+                            </div>
+                            <h1 className="text-xl font-black tracking-tighter uppercase italic">Structured Plan</h1>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] text-slate-500 uppercase">Goal: $10</p>
-                            <span className="mono text-emerald-400 font-bold">${dailyProfit}</span>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold">Daily Target $10</p>
+                            <div className="text-xl mono font-bold text-emerald-400">${dailyProfit}</div>
                         </div>
                     </div>
 
-                    {/* Risk Tool */}
-                    <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl mb-6">
-                        <div className="flex justify-between items-center mb-2">
-                            <label className="text-xs text-slate-400 uppercase">Stop Loss Pips</label>
-                            <span className="mono text-blue-400 font-bold">{getLotSize(pips)}</span>
+                    {/* Risk Section - Page 2 Rules */}
+                    <div className="glass p-5 rounded-3xl mb-4">
+                        <div className="flex justify-between items-end mb-4">
+                            <div>
+                                <p className="text-[10px] text-slate-500 uppercase font-bold">Risk Management</p>
+                                <p className="text-lg font-bold text-blue-400">{getLotSize(pips)}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-slate-500 uppercase font-bold">Stop Loss</p>
+                                <p className="mono font-bold">{pips} Pips</p>
+                            </div>
                         </div>
                         <input 
-                            type="range" min="8" max="20" value={pips} 
+                            type="range" min="10" max="15" step="1" value={pips} 
                             onChange={(e) => setPips(parseInt(e.target.value))}
                             className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
                         />
-                        <div className="flex justify-between mt-2 text-[10px] text-slate-600">
-                            <span>8 Pips</span><span>10 (High Lot)</span><span>15 (0.1 Lot)</span><span>20</span>
+                        <div className="flex justify-between mt-2 text-[10px] text-slate-600 font-bold px-1">
+                            <span>10 PIPS (0.3)</span>
+                            <span>15 PIPS (0.1)</span>
                         </div>
                     </div>
 
-                    {/* Checklist */}
-                    <div className="space-y-3">
-                        {Object.entries({
-                            htfBias: 'HTF Bias (W/D) Clear',
-                            h4Levels: 'H4 Levels (BOS/FVG/OB)',
-                            priceAtOB: 'Price at H4/HTF OB',
-                            ltfConfirm: 'LTF BOS + CHoCH',
-                            confluence30m: '30m Confluence Present'
-                        }).map(([id, label]) => (
+                    {/* Structured Analysis - Page 1 & 2 */}
+                    <div className="space-y-2">
+                        <p className="text-[10px] text-slate-500 uppercase font-bold ml-2 mb-1">1) HTF Bias & 2) H4 Levels</p>
+                        
+                        {[
+                            { id: 'liquidity', label: 'Liquidity / Inducements Found' },
+                            { id: 'bos', label: 'Clear BOS (Break of Structure)' },
+                            { id: 'fvg', label: 'FVG (Fair Value Gaps) Marked' },
+                            { id: 'ob', label: 'OB (Order Blocks) Identified' },
+                            { id: 'h4Levels', label: 'H4 Plotting (BOS+FVG+OB)' },
+                        ].map(item => (
                             <div 
-                                key={id}
-                                onClick={() => setChecklist({...checklist, [id]: !checklist[id]})}
-                                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                                    checklist[id] ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-slate-900 border-slate-800'
-                                }`}
+                                key={item.id}
+                                onClick={() => setAnalysis({...analysis, [item.id]: !analysis[item.id]})}
+                                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${analysis[item.id] ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-slate-900/40 border-slate-800'}`}
                             >
-                                <span className={`text-sm ${checklist[id] ? 'text-emerald-400' : 'text-slate-400'}`}>{label}</span>
-                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${checklist[id] ? 'bg-emerald-500 border-emerald-500' : 'border-slate-700'}`}>
-                                    {checklist[id] && <i className="lucide-check text-white w-3 h-3"></i>}
+                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center ${analysis[item.id] ? 'bg-emerald-500 border-emerald-500' : 'border-slate-700'}`}>
+                                    {analysis[item.id] && <i className="lucide-check text-slate-950 w-4 h-4 stroke-[4]"></i>}
                                 </div>
+                                <span className={`text-sm font-semibold ${analysis[item.id] ? 'text-emerald-400' : 'text-slate-400'}`}>{item.label}</span>
+                            </div>
+                        ))}
+
+                        <p className="text-[10px] text-slate-500 uppercase font-bold ml-2 mt-4 mb-1">Execution Criteria</p>
+                        
+                        {[
+                            { id: 'ltfConfirm', label: 'LTF BOS + CHoCH Confirmed' },
+                            { id: 'confluence30m', label: '30m Final Confluence' },
+                        ].map(item => (
+                            <div 
+                                key={item.id}
+                                onClick={() => setAnalysis({...analysis, [item.id]: !analysis[item.id]})}
+                                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${analysis[item.id] ? 'bg-blue-500/10 border-blue-500/40' : 'bg-slate-900/40 border-slate-800'}`}
+                            >
+                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center ${analysis[item.id] ? 'bg-blue-500 border-blue-500' : 'border-slate-700'}`}>
+                                    {analysis[item.id] && <i className="lucide-check text-white w-4 h-4 stroke-[4]"></i>}
+                                </div>
+                                <span className={`text-sm font-semibold ${analysis[item.id] ? 'text-blue-400' : 'text-slate-400'}`}>{item.label}</span>
                             </div>
                         ))}
                     </div>
 
+                    {/* Trade Count Monitor */}
+                    <div className="mt-6 flex justify-between items-center px-2">
+                        <span className="text-[10px] text-slate-500 uppercase font-bold">Trades this setup</span>
+                        <div className="flex gap-1">
+                            {[1, 2, 3].map(t => (
+                                <div key={t} className={`w-6 h-1 rounded-full ${tradeCount >= t ? 'bg-amber-500' : 'bg-slate-800'}`}></div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Main Action */}
                     <button
-                        disabled={!allChecked}
+                        disabled={!isReady}
                         onClick={() => setStep(4)}
-                        className={`w-full mt-8 py-4 rounded-2xl font-bold text-lg transition-all ${
-                            allChecked ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20' : 'bg-slate-800 text-slate-600'
+                        className={`w-full mt-4 py-5 rounded-3xl font-black text-lg uppercase tracking-wider transition-all ${
+                            isReady ? 'bg-white text-slate-950 shadow-xl shadow-white/10 active:scale-95' : 'bg-slate-800 text-slate-600'
                         }`}
                     >
-                        {allChecked ? 'EXECUTE TRADE' : 'FINISH CHECKLIST'}
+                        {tradeCount >= 3 ? 'Limit Reached' : isReady ? 'Open Position' : 'Incomplete Plan'}
                     </button>
 
-                    {/* Active Trade Overlay */}
+                    {/* Binary Outcome Overlay */}
                     {step === 4 && (
-                        <div className="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 p-6">
-                            <div className="w-full text-center">
-                                <div className="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl flex items-center justify-center z-50 p-6">
+                            <div className="w-full">
+                                <div className="text-center mb-12">
+                                    <div className="inline-block px-4 py-1 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-4">Live Execution</div>
+                                    <h2 className="text-4xl font-black italic uppercase italic tracking-tighter mb-2">{instrument}</h2>
+                                    <p className="mono text-slate-500">{getLotSize(pips)} • {pips} Pips SL</p>
                                 </div>
-                                <h2 className="text-2xl font-bold mb-2 uppercase italic">Position Live</h2>
-                                <p className="mono text-slate-500 mb-12">{getLotSize(pips)} @ {pips} Pips SL</p>
                                 
                                 <div className="space-y-4">
                                     <button 
-                                        onClick={() => { setDailyProfit(d => d + 10); setStep(1); setChecklist({htfBias:false, h4Levels:false, priceAtOB:false, ltfConfirm:false, confluence30m:false}) }}
-                                        className="w-full bg-emerald-500 text-slate-950 font-black py-5 rounded-2xl text-xl"
+                                        onClick={() => { 
+                                            setDailyProfit(d => d + 10); 
+                                            setStep(1); 
+                                            setTradeCount(0);
+                                            setAnalysis({liquidity:false, bos:false, fvg:false, ob:false, h4Levels:false, ltfConfirm:false, confluence30m:false});
+                                        }}
+                                        className="w-full bg-emerald-500 text-slate-950 font-black py-6 rounded-3xl text-xl shadow-lg shadow-emerald-500/20 active:scale-95"
                                     >
-                                        HIT TAKE PROFIT
+                                        TAKE PROFIT (TP)
                                     </button>
                                     <button 
-                                        onClick={() => { setStep(1); setChecklist({htfBias:false, h4Levels:false, priceAtOB:false, ltfConfirm:false, confluence30m:false}) }}
-                                        className="w-full bg-red-600 text-white font-bold py-4 rounded-2xl"
+                                        onClick={() => { 
+                                            setStep(1); 
+                                            setTradeCount(prev => prev + 1);
+                                            // Keep analysis checks if they want to try the same setup again (up to 3 times)
+                                        }}
+                                        className="w-full bg-slate-100 text-slate-950 font-black py-5 rounded-3xl text-lg active:scale-95"
                                     >
-                                        HIT STOP LOSS
+                                        ACCEPT STOP LOSS (SL)
                                     </button>
+                                    <p className="text-center text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-8">Outcomes are Binary • No Forcing Trades</p>
                                 </div>
                             </div>
                         </div>
