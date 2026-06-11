@@ -17,7 +17,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid symbol" }, { status: 400 })
   }
 
-  const candles = generateCandles(symbol, "H4")
+  // ADDED 'await' HERE
+  const candles = await generateCandles(symbol, "H4") 
+  
   const result = runBacktest(candles, {
     symbol,
     riskReward,
