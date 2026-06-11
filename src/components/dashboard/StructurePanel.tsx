@@ -24,8 +24,11 @@ export function StructurePanel({ signal }: { signal: TradeSignal }) {
     <Panel title="Market Structure (Multi-Timeframe)">
       <div className="flex flex-col gap-3">
         {timeframes.map((tf) => {
-          const a = signal.timeframeAnalysis[tf]
+          // 🛠️ FIX: Use optional chaining to safely access timeframeAnalysis
+          const a = signal.timeframeAnalysis?.[tf]
+          
           if (!a) return null
+          
           return (
             <div
               key={tf}
