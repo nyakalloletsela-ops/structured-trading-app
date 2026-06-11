@@ -40,5 +40,7 @@ export function getActiveAnalysis(state: MarketState): SymbolAnalysis | undefine
 
 export function getActiveStructure(state: MarketState): StructureAnalysis | undefined {
   const analysis = state.analyses[state.activeSymbol]
-  return analysis?.signal.timeframeAnalysis[state.activeTimeframe]
+  
+  // 🛠️ FIX: Added ?. before the bracket indexer to safely handle undefined timeframeAnalysis
+  return analysis?.signal.timeframeAnalysis?.[state.activeTimeframe]
 }
